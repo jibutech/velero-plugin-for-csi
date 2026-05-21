@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       registry:
-        description: 'Image registry'
+        description: "Image registry"
         required: true
-        default: 'jibutech-registry.cn-hangzhou.cr.aliyuncs.com'
+        default: "crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com"
         type: choice
         options:
-        - docker.io
-        - jibutech-registry.cn-hangzhou.cr.aliyuncs.com
-        - registry.cn-shanghai.aliyuncs.com
+          - docker.io
+          - crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com
+          - registry.cn-shanghai.aliyuncs.com
 
 jobs:
   generate:
@@ -19,65 +19,65 @@ jobs:
     outputs:
       image-tag: ${{ steps.generate.outputs.tag }}
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - id: generate
-      run: echo "tag=$(./hack/image-tag)" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: generate
+        run: echo "tag=$(./hack/image-tag)" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
     needs: generate
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Login to Alicloud Docker registry
-      if: inputs.registry == 'registry.cn-shanghai.aliyuncs.com'
-      uses: docker/login-action@v2
-      with:
-        registry: registry.cn-shanghai.aliyuncs.com
-        username: ${{ secrets.ALI_REGISTRY_USER }}
-        password: ${{ secrets.ALI_REGISTRY_PASS }}
-    - name: Login to Jibutech Alicloud Docker registry
-      if: inputs.registry == 'jibutech-registry.cn-hangzhou.cr.aliyuncs.com'
-      uses: docker/login-action@v2
-      with:
-        registry: jibutech-registry.cn-hangzhou.cr.aliyuncs.com
-        repo: ys1000
-        username: ${{ secrets.JIBUTECH_ALI_REGISTRY_USER }}
-        password: ${{ secrets.JIBUTECH_ALI_REGISTRY_PASS }}
-    - name: Login to Docker registry
-      if: inputs.registry == 'docker.io'
-      uses: docker/login-action@v2
-      with:
-        registry: docker.io
-        repo: jibutech
-        username: ${{ secrets.DOCKER_REGISTRY_USER }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASS }}
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Build and push Docker images
-      run: |
-        export REGISTRY=jibutech-registry.cn-hangzhou.cr.aliyuncs.com/ys1000
-        if [ "$YS1000_REGISTRY" != "jibutech-registry.cn-hangzhou.cr.aliyuncs.com" ]; then export REGISTRY="${YS1000_REGISTRY}/jibutech"; fi
-        echo "REGISTRY: $REGISTRY"
-        GOPROXY=https://proxy.golang.org,direct TAG=${{needs.generate.outputs.image-tag}}-snapshotv1beta1 REGISTRY=${REGISTRY} make csi.push
-      env:
-        TARGET: ${{ github.event.inputs.target }}
-        YS1000_REGISTRY: ${{ inputs.registry }}
-    - name: Build and push snapshotv1 Docker images
-      run: |
-        export REGISTRY=jibutech-registry.cn-hangzhou.cr.aliyuncs.com/ys1000
-        if [ "$YS1000_REGISTRY" != "jibutech-registry.cn-hangzhou.cr.aliyuncs.com" ]; then export REGISTRY="${YS1000_REGISTRY}/jibutech"; fi
-        echo "REGISTRY: $REGISTRY"
-        git config user.email "test@example.com"
-        git config user.name "test"
-        git checkout -b jibu-cherry-pick
-        git cherry-pick 820281ec0c100966527bc9525ff4c0b21ad6e579
-        GOPROXY=https://proxy.golang.org,direct TAG=${{needs.generate.outputs.image-tag}} REGISTRY=${REGISTRY} make csi.push
-      env:
-        TARGET: ${{ github.event.inputs.target }}
-        YS1000_REGISTRY: ${{ inputs.registry }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Login to Alicloud Docker registry
+        if: inputs.registry == 'registry.cn-shanghai.aliyuncs.com'
+        uses: docker/login-action@v2
+        with:
+          registry: registry.cn-shanghai.aliyuncs.com
+          username: ${{ secrets.ALI_REGISTRY_USER }}
+          password: ${{ secrets.ALI_REGISTRY_PASS }}
+      - name: Login to Jibutech Alicloud Docker registry
+        if: inputs.registry == 'crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com'
+        uses: docker/login-action@v2
+        with:
+          registry: crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com
+          repo: ys1000-public
+          username: ${{ secrets.YS1000_ALI_REGISTRY_USER }}
+          password: ${{ secrets.YS1000_ALI_REGISTRY_PASS }}
+      - name: Login to Docker registry
+        if: inputs.registry == 'docker.io'
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          repo: jibutech
+          username: ${{ secrets.DOCKER_REGISTRY_USER }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASS }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and push Docker images
+        run: |
+          export REGISTRY=crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com/ys1000-public
+          if [ "$YS1000_REGISTRY" != "crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com" ]; then export REGISTRY="${YS1000_REGISTRY}/jibutech"; fi
+          echo "REGISTRY: $REGISTRY"
+          GOPROXY=https://proxy.golang.org,direct TAG=${{needs.generate.outputs.image-tag}}-snapshotv1beta1 REGISTRY=${REGISTRY} make csi.push
+        env:
+          TARGET: ${{ github.event.inputs.target }}
+          YS1000_REGISTRY: ${{ inputs.registry }}
+      - name: Build and push snapshotv1 Docker images
+        run: |
+          export REGISTRY=crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com/ys1000-public
+          if [ "$YS1000_REGISTRY" != "crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com" ]; then export REGISTRY="${YS1000_REGISTRY}/jibutech"; fi
+          echo "REGISTRY: $REGISTRY"
+          git config user.email "test@example.com"
+          git config user.name "test"
+          git checkout -b jibu-cherry-pick
+          git cherry-pick 820281ec0c100966527bc9525ff4c0b21ad6e579
+          GOPROXY=https://proxy.golang.org,direct TAG=${{needs.generate.outputs.image-tag}} REGISTRY=${REGISTRY} make csi.push
+        env:
+          TARGET: ${{ github.event.inputs.target }}
+          YS1000_REGISTRY: ${{ inputs.registry }}
