@@ -17,7 +17,7 @@ BIN ?= velero-plugin-for-csi
 
 BUILD_IMAGE ?= golang:1.16-stretch
 
-REGISTRY ?= jibutech-registry.cn-hangzhou.cr.aliyuncs.com/ys1000
+REGISTRY ?= crpi-j91ez2jj7pk7fpab.cn-shanghai.personal.cr.aliyuncs.com/ys1000-public
 IMAGE_NAME ?= $(REGISTRY)/velero-plugin-for-csi
 TAG ?= dev
 
